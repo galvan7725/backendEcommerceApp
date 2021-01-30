@@ -93,6 +93,19 @@ exports.updateProduct = async (req, res) => {
     }
 }
 
+exports.deleteProduct = async(req, res) => {
+    try {
+        const response = await Product.findByIdAndRemove(req.product._id);
+        if (response.error || !response){
+            res.status(400).send({error:'error deleting product'});
+        }else{
+            res.status(200).send({success: true});
+        }
+    } catch (error) {
+        res.status(500).send({error:'internal server error'})
+    }
+}
+
 
 
 
