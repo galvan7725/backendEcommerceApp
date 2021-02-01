@@ -2,7 +2,11 @@ const Product = require('../models/Product');
 const {Category} = require('../models/Category');
 
 exports.allProducts = async(req,res)=>{
-    const products = await Product.find().populate('category');
+    let filter = {};
+    if(req.query.categories){
+         filter = {category: req.query.categories.split(',')};
+    }
+    const products = await Product.find(filter).populate('category');
     if(products.error || !products){
      res.status(400).send({error: products.error});
     }else{
@@ -106,8 +110,32 @@ exports.deleteProduct = async(req, res) => {
     }
 }
 
+exports.countProduct = async(req, res)=>{
+    try {
+        const productCount = await Product.countDocuments((err,count)=>count);
+        if(!productCount){
+            res.status(404).send({error:'count not found'});
+        }else{
+            res.status(200).send({success:true,count:productCount});
+        }
+    } catch (error) {
+        res.status(500).send({error:'internal server error'})
+    }
+}
 
-
+exports.featuredProducts = async(req, res)=>{
+    const count = req.params.count ? req.params.count : 0;
+    try {
+        const products = await Product.find({isFeatured: true}).limit(+count);
+        if (!products){
+            res.status(404).send({error: 'Products not found'});
+        }else{
+            res.status(200).send({success: true,products});
+        }
+    } catch (error) {
+        res.status(500).send({error:'internal server error'});
+    }
+}
 
 const validateCategory = async(categoryId)=>{
     console.log(categoryId);
