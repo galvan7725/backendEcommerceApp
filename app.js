@@ -5,6 +5,7 @@ const morgan = require('morgan');
 const mongoose = require('mongoose');
 const productsRoutes = require('./routers/products');
 const categoryRoutes = require('./routers/categories');
+const userRoutes = require('./routers/users');
 const cors = require('cors');
 
 require('dotenv/config');
@@ -22,6 +23,7 @@ app.use(morgan('tiny'));
 //routes
 app.use(`${api}/products`,productsRoutes);
 app.use(`${api}/categories`,categoryRoutes);
+app.use(`${api}/users/`,userRoutes);
 
 mongoose.connect(process.env.CONNECTION_STRING,{ useNewUrlParser: true, useUnifiedTopology: true })
 .then(()=>{
