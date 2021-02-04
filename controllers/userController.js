@@ -65,13 +65,40 @@ exports.login = async(req, res)=>{
         }else{
             if(user && bcrypt.compareSync(req.body.password, user.passwordHash)){
                 const token = jwt.sign({
-                    userId: user.id
+                    userId: user.id,
+                    isAdmin: user.isAdmin
                 },secret,{expiresIn:'1w'});
                 res.status(200).send({user: user.email,token});
 
             }else{
                 res.status(400).send({error:'Invalid password'});
             }
+        }
+    } catch (error) {
+        res.status(500).send({error:'internal server error'})
+    }
+}
+
+exports.countUsers = async(req, res)=>{
+    try {
+        const userCount = await User.countDocuments((err,count)=>count);
+        if(!userCount){
+            res.status(404).send({error:'count not found'});
+        }else{
+            res.status(200).send({success:true,count:userCount});
+        }
+    } catch (error) {
+        res.status(500).send({error:'internal server error'})
+    }
+}
+
+exports.deleteUser = async(req, res) => {
+    try {
+        const response = await User.findByIdAndRemove(req.params.userId);
+        if (response.error || !response){
+            res.status(400).send({error:'error deleting user'});
+        }else{
+            res.status(200).send({success: true});
         }
     } catch (error) {
         res.status(500).send({error:'internal server error'})

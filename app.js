@@ -7,7 +7,8 @@ const productsRoutes = require('./routers/products');
 const categoryRoutes = require('./routers/categories');
 const userRoutes = require('./routers/users');
 const cors = require('cors');
-
+const authJwt = require('./helpers/jwt');
+const errorHandler = require('./helpers/errorHandler');
 require('dotenv/config');
 
 const api = process.env.API_URL;
@@ -19,6 +20,8 @@ app.options('*',cors());
 //middleware
 app.use(bodyParser.json());
 app.use(morgan('tiny'));
+app.use(authJwt());
+app.use(errorHandler);
 
 //routes
 app.use(`${api}/products`,productsRoutes);
