@@ -1,9 +1,10 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 exports.listUsers = async(req, res)=>{
     try {
-        const users = await User.find();
+        const users = await User.find().select('-passwordHash');
         if(!users){
             res.status(400).send({error:'users not found'});
         }else{
@@ -13,6 +14,19 @@ exports.listUsers = async(req, res)=>{
         res.status(500).send({error:'internal server error'});
     }
 
+}
+
+exports.singleUser = async(req, res) => {
+    try {
+        const user = await User.findById(req.params.userId).select('-passwordHash');
+        if(!user) {
+            res.status(404).send({error:'user not found'});
+        }else{
+            res.status(200).send({success: true,user: user});
+        }
+    } catch (error) {
+        res.status(500).send({error:'internal server error'});
+    }
 }
 
 exports.newUser = async(req, res) => {
@@ -39,5 +53,27 @@ exports.newUser = async(req, res) => {
     } catch (error) {
         console.log(error);
         res.status(500).send({error:'internal server error'});
+    }
+}
+
+exports.login = async(req, res)=>{
+    try {
+        const secret = process.env.SECRET;
+        const user = await User.findOne({email: req.body.email});
+        if(!user){
+            return res.status(404).send({error: 'user not found'});
+        }else{
+            if(user && bcrypt.compareSync(req.body.password, user.passwordHash)){
+                const token = jwt.sign({
+                    userId: user.id
+                },secret,{expiresIn:'1w'});
+                res.status(200).send({user: user.email,token});
+
+            }else{
+                res.status(400).send({error:'Invalid password'});
+            }
+        }
+    } catch (error) {
+        res.status(500).send({error:'internal server error'})
     }
 }
