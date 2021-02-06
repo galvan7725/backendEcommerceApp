@@ -1,5 +1,7 @@
 const Product = require('../models/Product');
 const {Category} = require('../models/Category');
+const mongoose = require('mongoose');
+
 
 exports.allProducts = async(req,res)=>{
     let filter = {};
@@ -34,11 +36,17 @@ exports.singleProduct = (req, res)=>{
 
 exports.newProduct = async(req, res) => {
     try {
+        const file = req.file;
+        if(!file){
+            return res.status(400).send({error: 'No image in the request'});
+        }
+        const fileName = req.file.filename;
+        const basePath = `${req.protocol}://${req.get('host')}/public/uploads/`;
         const product = new Product({
             name: req.body.name,
             description: req.body.description,
             richDescription: req.body.richDescription,
-            image : req.body.image,
+            image : `${basePath}${fileName}`,
             brand : req.body.brand,
             price : req.body.price,
             category : req.body.category,
@@ -64,6 +72,37 @@ exports.newProduct = async(req, res) => {
         res.status(500).send({error:'internal server error'});
         console.log(error);
     }
+}
+
+exports.galleryImages = async(req, res)=>{
+    try {
+        if(!mongoose.isValidObjectId(req.params.productId)){
+            return res.status(404).send({error:'product not found'});
+        }
+        const basePath = `${req.protocol}://${req.get('host')}/public/uploads/`;
+        const files = req.files;
+        let imagesPaths = [];
+        if(files){
+            files.map(file =>{
+                imagesPaths.push(`${basePath}${file.filename}`);
+            })
+        }
+        const objectProduct = {
+           images: imagesPaths
+        }
+        
+            const response = await Product.findByIdAndUpdate(req.params.productId1,objectProduct,{new: true});
+            if(response.error || !response){
+                res.status(500).send({error:'error updating product'});
+            }else{
+                res.status(200).send({status: 'success',response});
+            }
+       
+
+    } catch (error) {
+        res.status(500).send({error:'internal server error'});
+    }
+
 }
 
 exports.updateProduct = async (req, res) => {
