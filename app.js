@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const productsRoutes = require('./routers/products');
 const categoryRoutes = require('./routers/categories');
 const userRoutes = require('./routers/users');
+const orderRoutes = require('./routers/orders');
 const cors = require('cors');
 const authJwt = require('./helpers/jwt');
 const errorHandler = require('./helpers/errorHandler');
@@ -27,6 +28,7 @@ app.use(errorHandler);
 app.use(`${api}/products`,productsRoutes);
 app.use(`${api}/categories`,categoryRoutes);
 app.use(`${api}/users/`,userRoutes);
+app.use(`${api}/orders`,orderRoutes);
 
 mongoose.connect(process.env.CONNECTION_STRING,{ useNewUrlParser: true, useUnifiedTopology: true })
 .then(()=>{
